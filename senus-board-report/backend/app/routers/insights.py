@@ -121,7 +121,12 @@ def _generate(section: str, db: Session, force: bool = False) -> InsightResponse
         content = _call_llm(section, data)
         is_fallback = False
         model_used = current_model_label()
-    except Exception:
+    except Exception as e:
+        # Log the real cause instead of silently falling back — a bad key,
+        # network error, or provider outage should be visible in the server
+        # logs, not just show up as unexplained fallback text in the UI.
+        print(f"[insights] AI commentary call failed for section '{section}' "
+              f"({type(e).__name__}): {e}")
         content = _fallback_text(section, data)
         is_fallback = True
         model_used = None

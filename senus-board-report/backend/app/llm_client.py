@@ -22,7 +22,7 @@ Get an Anthropic key at https://console.anthropic.com — paid, usage-based.
 
 import os
 
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = "openai/gpt-oss-120b"
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
 
