@@ -91,6 +91,17 @@ async def extract_document(
         doc.status = "discarded"
         db.commit()
         raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        # Catches provider-side failures (invalid/expired key, network error,
+        # rate limit, malformed JSON from the model, etc.) so the person
+        # gets a clear message instead of a raw stack trace / 500.
+        doc.status = "discarded"
+        db.commit()
+        raise HTTPException(
+            status_code=502,
+            detail=f"AI extraction call failed ({type(e).__name__}: {e}). "
+                   f"Check that your API key is valid and has not expired.",
+        )
 
     warnings = []
     if not result.periods:
