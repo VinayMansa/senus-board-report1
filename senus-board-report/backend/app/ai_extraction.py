@@ -2,13 +2,15 @@
 AI-powered financial data extraction pipeline.
 
 Reads the raw text extracted from Senus PLC's public Information Document
-(app/data/source_document.txt) and uses the Anthropic API (Claude) to parse
-it into the structured schema defined in app/schemas.py::ExtractionResult.
-The validated result is written to app/data/extracted_financials.json, which
+(app/data/source_document.txt) and uses an LLM (Groq's free tier by default,
+or Anthropic Claude if configured — see app/llm_client.py) to parse it into
+the structured schema defined in app/schemas.py::ExtractionResult. The
+validated result is written to app/data/extracted_financials.json, which
 app/seed.py then loads into the SQLite database.
 
 Run:
-    export ANTHROPIC_API_KEY=sk-ant-...
+    export GROQ_API_KEY=gsk_...        # free — console.groq.com/keys
+    # or: export ANTHROPIC_API_KEY=sk-ant-...
     python -m app.ai_extraction
 
 Design notes
@@ -26,23 +28,23 @@ Design notes
   stated in the source) must be flagged via `source_note`, so downstream
   consumers (the metrics engine, the UI) can visibly mark them as
   assumptions rather than presenting them as disclosed facts.
+- The LLM provider is pluggable (app/llm_client.py) — Groq's free, no-card
+  tier and Anthropic's paid API are interchangeable here with zero changes
+  to this file, selected automatically by which API key is set.
 """
 
 import json
-import os
 import sys
 from pathlib import Path
 
-from anthropic import Anthropic
 from pydantic import ValidationError
 
+from .llm_client import chat_json, current_model_label
 from .schemas import ExtractionResult
 
 APP_DIR = Path(__file__).parent
 SOURCE_DOC_PATH = APP_DIR / "data" / "source_document.txt"
 OUTPUT_PATH = APP_DIR / "data" / "extracted_financials.json"
-
-MODEL = "claude-sonnet-4-6"
 
 SYSTEM_PROMPT = """You are a financial data extraction engine for a board-reporting platform.
 You will be given raw text extracted from a public company Information Document.
@@ -55,23 +57,15 @@ value already given elsewhere in the text), you may do so, but note it in source
 Respond with ONLY the JSON object. No markdown fences, no preamble, no commentary."""
 
 
+def call_llm(source_text: str, incremental: bool = False) -> dict:
+    """Calls the configured LLM provider (see app/llm_client.py) to extract
+    structured financials from arbitrary source text. Used both by the
+    offline CLI pipeline (full Information Document, `incremental=False`)
+    and by the live document-upload endpoint (a single new filing — e.g. a
+    half-year report — `incremental=True`, which relaxes the "extract two
+    periods" instruction since a fresh filing may only disclose one new
+    period)."""
 
-def call_claude(source_text: str, incremental: bool = False) -> dict:
-    """Calls the Anthropic API to extract structured financials from arbitrary
-    source text. Used both by the offline CLI pipeline (full Information
-    Document, `incremental=False`) and by the live document-upload endpoint
-    (a single new filing — e.g. a half-year report — `incremental=True`,
-    which relaxes the "extract two periods" instruction since a fresh filing
-    may only disclose one new period)."""
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "ANTHROPIC_API_KEY not set. Export it before running AI extraction, e.g.:\n"
-            "  export ANTHROPIC_API_KEY=sk-ant-...\n  python -m app.ai_extraction"
-        )
-
-    client = Anthropic(api_key=api_key)
     schema_json = ExtractionResult.model_json_schema()
 
     if incremental:
@@ -100,15 +94,7 @@ instance matching ExtractionResult, not the schema itself):
 
 Return ONLY the JSON object matching ExtractionResult."""
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=4000,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    raw_text = "".join(block.text for block in response.content if block.type == "text")
-    raw_text = raw_text.strip()
+    raw_text = chat_json(SYSTEM_PROMPT, prompt, max_tokens=4000).strip()
     if raw_text.startswith("```"):
         raw_text = raw_text.split("```")[1]
         if raw_text.startswith("json"):
@@ -121,7 +107,7 @@ def extract_from_text(source_text: str, incremental: bool = True) -> ExtractionR
     validated ExtractionResult. Raises ValidationError if the model's output
     doesn't match the schema — callers should surface that as a 502 to the
     client rather than silently trusting malformed data."""
-    raw_json = call_claude(source_text, incremental=incremental)
+    raw_json = call_llm(source_text, incremental=incremental)
     return ExtractionResult.model_validate(raw_json)
 
 
@@ -136,7 +122,7 @@ def run_extraction() -> ExtractionResult:
 
     source_text = SOURCE_DOC_PATH.read_text(encoding="utf-8")
     print(f"[ai_extraction] Read {len(source_text)} chars from {SOURCE_DOC_PATH.name}")
-    print(f"[ai_extraction] Calling {MODEL} to extract structured financials...")
+    print(f"[ai_extraction] Calling {current_model_label()} to extract structured financials...")
 
     try:
         result = extract_from_text(source_text, incremental=False)
