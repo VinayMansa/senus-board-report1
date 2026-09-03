@@ -11,13 +11,61 @@ the assumption, so the UI can surface it rather than presenting an
 estimate as a disclosed fact.
 """
 
-from typing import List
+from datetime import date
+from typing import List, Optional
 
 from .models import FinancialPeriod, ProductACV, KpiTarget
 
 
 def _sorted_periods(periods: List[FinancialPeriod]) -> List[FinancialPeriod]:
     return sorted(periods, key=lambda p: p.fiscal_year_end)
+
+
+def _parse_date(iso_str: str) -> Optional[date]:
+    try:
+        return date.fromisoformat(iso_str)
+    except (ValueError, TypeError):
+        return None
+
+
+def _mom_growth(periods: List[FinancialPeriod]) -> dict:
+    """Month-over-month revenue growth is only meaningful between two
+    periods whose end-dates are ~1 month apart. The source Information
+    Document only discloses ANNUAL figures (FY2024, FY2025 — 12 months
+    apart), so MoM is genuinely not computable from it. This function is
+    written to work automatically the moment monthly management accounts
+    are uploaded via the Upload Report flow (which accepts any period
+    end-date, not just fiscal year-ends) — no code change needed then."""
+    if len(periods) < 2:
+        return {"mom_revenue_growth_pct": None, "mom_note": (
+            "Not available — at least two periods are needed to compute month-over-month growth."
+        )}
+
+    latest, previous = periods[-1], periods[-2]
+    d1, d2 = _parse_date(previous.fiscal_year_end), _parse_date(latest.fiscal_year_end)
+    if not d1 or not d2:
+        return {"mom_revenue_growth_pct": None, "mom_note": "Not available — period dates could not be parsed."}
+
+    gap_days = (d2 - d1).days
+    if not (20 <= gap_days <= 45):
+        return {
+            "mom_revenue_growth_pct": None,
+            "mom_note": (
+                f"Not available — the two most recent periods on file ({previous.label} \u2192 {latest.label}) "
+                f"are {gap_days} days apart, not ~1 month. The source Information Document discloses annual "
+                "(FY-end) figures only. Upload monthly management accounts via 'Upload Report' and this metric "
+                "populates automatically \u2014 no configuration needed."
+            ),
+        }
+
+    if not previous.turnover:
+        return {"mom_revenue_growth_pct": None, "mom_note": "Not available — prior period revenue is zero or missing."}
+
+    mom = round((latest.turnover - previous.turnover) / previous.turnover * 100, 1)
+    return {
+        "mom_revenue_growth_pct": mom,
+        "mom_note": f"Month-over-month revenue growth, {previous.label} \u2192 {latest.label}.",
+    }
 
 
 def growth_metrics(periods: List[FinancialPeriod], acv_rows: List[ProductACV], kpi_targets: List[KpiTarget]) -> dict:
@@ -52,6 +100,8 @@ def growth_metrics(periods: List[FinancialPeriod], acv_rows: List[ProductACV], k
                 "Outside Ireland": round(100 - p.revenue_pct_ireland, 1),
             }
 
+    mom = _mom_growth(periods)
+
     return {
         "periods": labels,
         "revenue": revenue,
@@ -70,7 +120,18 @@ def growth_metrics(periods: List[FinancialPeriod], acv_rows: List[ProductACV], k
             }
             for a in acv_rows
         ],
+        "mom_revenue_growth_pct": mom["mom_revenue_growth_pct"],
+        "mom_note": mom["mom_note"],
+        "bookings_note": (
+            "Not disclosed. The source Information Document reports recognised revenue "
+            "(\u20ac836,991 FY2025) and Enterprise Average Contract Value by product, but not new "
+            "bookings / total contract value signed in the period. The Company describes tracking "
+            "\u2018leads generated, prospects, projects priced and contracts won\u2019 through its sales funnel "
+            "internally (Section 5.1.2), which would be the source for a Bookings metric \u2014 this would "
+            "require a CRM/pipeline data connector, not a financial filing, to populate reliably."
+        ),
     }
+
 
 
 def profitability_metrics(periods: List[FinancialPeriod]) -> dict:
@@ -222,17 +283,51 @@ def returns_metrics(periods: List[FinancialPeriod], acv_rows: List[ProductACV]) 
 
     trend = {a.product: a.avg_acv_enterprise for a in acv_rows}
 
+    # Illustrative ROCE. Capital Employed = Equity + Non-current liabilities
+    # is the standard proxy when a full balance sheet isn't available. The
+    # source document discloses Net (Liabilities)/Assets (i.e. equity)
+    # directly for both years, but only the MOVEMENT in non-current
+    # liabilities (+\u20ac83,655 in FY2025, "following drawdown of a new bank
+    # loan"), not the absolute balance in either year. We assume FY2024
+    # non-current liabilities were ~\u20ac0 (a pre-loan, pre-revenue-scale
+    # company) and that the FY2025 balance equals that disclosed movement \u2014
+    # i.e. the new loan IS substantially the FY2025 non-current liabilities
+    # figure. This is flagged as an estimate, not a disclosed fact.
+    assumed_noncurrent_liabilities = {periods[0].label: 0.0} if periods else {}
+    if len(periods) >= 2:
+        assumed_noncurrent_liabilities[periods[-1].label] = 83655.0
+
+    roce_pct = []
+    capital_employed = []
+    for p in periods:
+        ncl = assumed_noncurrent_liabilities.get(p.label, 0.0)
+        ce = p.net_assets_liabilities + ncl
+        capital_employed.append(round(ce, 0))
+        if ce and abs(ce) > 1:
+            roce_pct.append(round(p.operating_profit / ce * 100, 1))
+        else:
+            roce_pct.append(None)
+
+    latest_roce = roce_pct[-1] if roce_pct else None
+    roce_status = f"{latest_roce}% (illustrative estimate)" if latest_roce is not None else "Not calculable"
+
     return {
         "periods": labels,
-        "roce_status": "Negative (not meaningfully computable from disclosed summary balance sheet)",
+        "roce_pct": roce_pct,
+        "capital_employed": capital_employed,
+        "roce_status": roce_status,
         "roce_note": (
-            "ROCE = Operating Profit / Capital Employed cannot be precisely computed from the summary "
-            "financial information disclosed: the source Information Document gives movements in trade "
-            "debtors/creditors and net assets/liabilities, but not a full balance sheet breakdown of "
-            "fixed assets, total current liabilities, or non-current liabilities. What IS clear is that "
-            "the Company recorded operating losses in both FY2024 (\u2212\u20ac1,130,729) and FY2025 (\u2212\u20ac633,694), "
-            "so ROCE is negative regardless of the precise capital-employed denominator. The Board Report "
-            "should request the full statutory balance sheet to compute a precise ROCE for FY2026 onward."
+            "Illustrative estimate, not a precise disclosed figure. Capital Employed = Net Assets/"
+            "(Liabilities) + Non-current Liabilities. The source document discloses equity directly for "
+            "both years, but only the MOVEMENT in non-current liabilities (+\u20ac83,655 in FY2025, following "
+            "drawdown of the new SBCI-backed term loan), not the absolute balance in either year. This "
+            "estimate assumes FY2024 non-current liabilities were negligible (pre-loan) and that the "
+            "FY2025 balance equals that disclosed movement. Under this assumption, ROCE is extremely "
+            "negative in both years \u2014 driven as much by a very small capital-employed base (the Company "
+            "had \u20ac15,575 of NET LIABILITIES, not assets, at FY2025 year-end) as by the operating loss "
+            "itself. Treat the magnitude with caution; the direction (deeply negative) is robust to the "
+            "assumption, the precise number is not. Request the full statutory balance sheet for FY2026 "
+            "reporting to replace this estimate with a precise figure."
         ),
         "avg_acv_enterprise_trend": trend,
     }

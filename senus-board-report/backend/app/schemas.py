@@ -94,6 +94,9 @@ class GrowthMetrics(BaseModel):
     revenue_by_channel: dict
     revenue_by_geography: dict
     product_acv: List[ExtractedProductACV]
+    mom_revenue_growth_pct: Optional[float]
+    mom_note: str
+    bookings_note: str
 
 
 class ProfitabilityMetrics(BaseModel):
@@ -131,6 +134,8 @@ class SolvencyMetrics(BaseModel):
 
 class ReturnsMetrics(BaseModel):
     periods: List[str]
+    roce_pct: List[Optional[float]]
+    capital_employed: List[float]
     roce_status: str
     roce_note: str
     avg_acv_enterprise_trend: dict

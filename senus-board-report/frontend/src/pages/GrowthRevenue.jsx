@@ -1,7 +1,7 @@
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import api from "../api";
 import { useSection } from "../hooks/useSection";
-import { KpiCard, ChartCard, AiCommentary, Loading, ErrorBox, fmtEUR, fmtPct } from "../components/Widgets";
+import { KpiCard, ChartCard, AssumptionNote, AiCommentary, Loading, ErrorBox, fmtEUR, fmtPct } from "../components/Widgets";
 
 const CHANNEL_COLORS = ["#c99a3e", "#3e8e82", "#6f8c4d"];
 
@@ -48,7 +48,18 @@ export default function GrowthRevenue() {
           value={fmtPct(data.revenue_by_geography[geoYears[geoYears.length - 1]]?.Ireland)}
           sub="target: <50% by FY2030"
         />
+        <KpiCard
+          label="Month-over-month growth"
+          value={data.mom_revenue_growth_pct !== null ? fmtPct(data.mom_revenue_growth_pct, { showSign: true }) : "—"}
+          sub={data.mom_revenue_growth_pct !== null ? "latest two periods" : "not available — see note below"}
+        />
       </div>
+
+      <AssumptionNote>{data.mom_note}</AssumptionNote>
+      <div style={{ height: 12 }} />
+      <AssumptionNote>{data.bookings_note}</AssumptionNote>
+
+      <div style={{ height: 20 }} />
 
       <div className="chart-grid">
         <ChartCard title="Revenue by year" sub="Turnover, FY2024 vs FY2025 (€)">
