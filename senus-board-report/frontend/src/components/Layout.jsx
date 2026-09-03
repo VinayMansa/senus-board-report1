@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { to: "/cash", label: "Cash & Liquidity" },
   { to: "/solvency", label: "Solvency & Leverage" },
   { to: "/returns", label: "Returns" },
+  { to: "/upload", label: "Upload Report" },
 ];
 
 export default function Layout({ user, onLogout, children }) {

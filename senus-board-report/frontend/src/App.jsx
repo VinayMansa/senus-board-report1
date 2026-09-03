@@ -8,6 +8,7 @@ import Profitability from "./pages/Profitability";
 import CashLiquidity from "./pages/CashLiquidity";
 import SolvencyLeverage from "./pages/SolvencyLeverage";
 import Returns from "./pages/Returns";
+import UploadReport from "./pages/UploadReport";
 
 const SESSION_KEY = "senus_board_session";
 
@@ -57,6 +58,7 @@ export default function App() {
                   <Route path="/cash" element={<CashLiquidity />} />
                   <Route path="/solvency" element={<SolvencyLeverage />} />
                   <Route path="/returns" element={<Returns />} />
+                  <Route path="/upload" element={<UploadReport />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Layout>

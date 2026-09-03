@@ -15,6 +15,18 @@ export const api = {
   returns: () => client.get("/api/financials/returns").then((r) => r.data),
   insight: (section) => client.get(`/api/insights/${section}`).then((r) => r.data),
   regenerateInsight: (section) => client.post(`/api/insights/${section}/generate`).then((r) => r.data),
+
+  // Live document ingestion — upload a new filing, review the AI extraction,
+  // then commit it into the database.
+  listDocuments: () => client.get("/api/documents").then((r) => r.data),
+  extractDocument: (formData) =>
+    client.post("/api/documents/extract", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }).then((r) => r.data),
+  commitDocument: (documentId, extraction) =>
+    client.post(`/api/documents/${documentId}/commit`, { extraction }).then((r) => r.data),
+  discardDocument: (documentId) =>
+    client.delete(`/api/documents/${documentId}`).then((r) => r.data),
 };
 
 export default api;
