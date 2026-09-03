@@ -206,8 +206,8 @@ def solvency_metrics(periods: List[FinancialPeriod]) -> dict:
             "further financing. Credit providers should request the actual loan agreement terms."
         ),
         "gearing_note": (
-            f"Net (liabilities)/assets moved from \u20ac{periods[0].net_assets_liabilities:,.0f} (FY2024) to "
-            f"\u20ac{latest.net_assets_liabilities:,.0f} (FY2025) \u2014 i.e. the Company had negative shareholders' "
+            f"Net (liabilities)/assets moved from \u20ac{periods[-2].net_assets_liabilities:,.0f} ({periods[-2].label}) to "
+            f"\u20ac{latest.net_assets_liabilities:,.0f} ({latest.label}) \u2014 i.e. the Company had negative shareholders' "
             "equity at 30 June 2025 due to accumulated losses. Conventional gearing (Debt/Equity) is not "
             "meaningful with negative equity. This pre-dates the December 2025 \u20ac1.1m Private Placement "
             "and Euronext Admission, which the Directors state was completed to strengthen the balance "

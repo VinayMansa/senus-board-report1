@@ -82,6 +82,24 @@ class CorporateFact(Base):
     value = Column(String)
 
 
+class UploadedDocument(Base):
+    """Audit trail for documents fed through the live AI extraction pipeline
+    (as opposed to the initial offline seed from the Information Document).
+    Each upload goes through extract -> review -> commit; this table tracks
+    that lifecycle so the Board can see what was ingested and when."""
+
+    __tablename__ = "uploaded_documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, nullable=True)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="pending_review")  # pending_review | committed | discarded
+    fiscal_year_end = Column(String, nullable=True)  # populated once extraction identifies a period
+    raw_text_excerpt = Column(Text, nullable=True)  # first ~2000 chars, for audit/debugging
+    extraction_json = Column(Text, nullable=True)  # the extracted (pre-edit) payload
+    committed_at = Column(DateTime, nullable=True)
+
+
 class InsightCache(Base):
     """Cached AI-generated commentary so we don't re-call the model on every
     page load. Keyed by the section it was generated for."""

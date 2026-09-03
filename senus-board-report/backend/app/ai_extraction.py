@@ -55,8 +55,39 @@ value already given elsewhere in the text), you may do so, but note it in source
 Respond with ONLY the JSON object. No markdown fences, no preamble, no commentary."""
 
 
-def build_user_prompt(source_text: str, schema_json: dict) -> str:
-    return f"""SOURCE DOCUMENT TEXT:
+
+def call_claude(source_text: str, incremental: bool = False) -> dict:
+    """Calls the Anthropic API to extract structured financials from arbitrary
+    source text. Used both by the offline CLI pipeline (full Information
+    Document, `incremental=False`) and by the live document-upload endpoint
+    (a single new filing — e.g. a half-year report — `incremental=True`,
+    which relaxes the "extract two periods" instruction since a fresh filing
+    may only disclose one new period)."""
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY not set. Export it before running AI extraction, e.g.:\n"
+            "  export ANTHROPIC_API_KEY=sk-ant-...\n  python -m app.ai_extraction"
+        )
+
+    client = Anthropic(api_key=api_key)
+    schema_json = ExtractionResult.model_json_schema()
+
+    if incremental:
+        instruction = """Extract whatever FinancialPeriod(s), ProductACV rows, KpiTarget updates,
+and CorporateFact updates are disclosed in THIS document — it may be a single half-year
+or full-year filing covering just one new period, not necessarily two. Only include a
+FinancialPeriod entry for a period that is actually disclosed in this text. Leave
+kpi_targets and corporate_facts as empty lists unless this specific document updates them."""
+    else:
+        instruction = """Extract two FinancialPeriod entries (FY ended 30 June 2025 and FY ended
+30 June 2024), the ProductACV entries for Senus SOIL / Senus ERA / Senus TERRAIN (FY2025
+only, since that's what's disclosed), the KpiTarget entries from the Senus 2030 strategy
+KPIs described in the text, and CorporateFact entries for capital-structure / headcount /
+listing facts mentioned in the text."""
+
+    prompt = f"""SOURCE DOCUMENT TEXT:
 ---
 {source_text}
 ---
@@ -65,31 +96,15 @@ TARGET JSON SCHEMA (JSON Schema draft, for your reference only — respond with 
 instance matching ExtractionResult, not the schema itself):
 {json.dumps(schema_json, indent=2)}
 
-Extract two FinancialPeriod entries (FY ended 30 June 2025 and FY ended 30 June 2024),
-the ProductACV entries for Senus SOIL / Senus ERA / Senus TERRAIN (FY2025 only, since
-that's what's disclosed), the KpiTarget entries from the Senus 2030 strategy KPIs
-described in the text, and CorporateFact entries for capital-structure / headcount /
-listing facts mentioned in the text.
+{instruction}
 
 Return ONLY the JSON object matching ExtractionResult."""
-
-
-def call_claude(source_text: str) -> dict:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise RuntimeError(
-            "ANTHROPIC_API_KEY not set. Export it before running the extraction "
-            "pipeline, e.g.:\n  export ANTHROPIC_API_KEY=sk-ant-...\n  python -m app.ai_extraction"
-        )
-
-    client = Anthropic(api_key=api_key)
-    schema_json = ExtractionResult.model_json_schema()
 
     response = client.messages.create(
         model=MODEL,
         max_tokens=4000,
         system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": build_user_prompt(source_text, schema_json)}],
+        messages=[{"role": "user", "content": prompt}],
     )
 
     raw_text = "".join(block.text for block in response.content if block.type == "text")
@@ -101,7 +116,21 @@ def call_claude(source_text: str) -> dict:
     return json.loads(raw_text)
 
 
+def extract_from_text(source_text: str, incremental: bool = True) -> ExtractionResult:
+    """Reusable entry point: run AI extraction on arbitrary text and return a
+    validated ExtractionResult. Raises ValidationError if the model's output
+    doesn't match the schema — callers should surface that as a 502 to the
+    client rather than silently trusting malformed data."""
+    raw_json = call_claude(source_text, incremental=incremental)
+    return ExtractionResult.model_validate(raw_json)
+
+
 def run_extraction() -> ExtractionResult:
+    """CLI entry point: runs the full offline extraction against the
+    committed Information Document text and overwrites extracted_financials.json.
+    This is the original bootstrap pipeline — for live, in-app document
+    uploads see routers/documents.py, which calls extract_from_text() directly
+    and routes through a review step before anything is written to the DB."""
     if not SOURCE_DOC_PATH.exists():
         raise FileNotFoundError(f"Source document not found at {SOURCE_DOC_PATH}")
 
@@ -109,10 +138,8 @@ def run_extraction() -> ExtractionResult:
     print(f"[ai_extraction] Read {len(source_text)} chars from {SOURCE_DOC_PATH.name}")
     print(f"[ai_extraction] Calling {MODEL} to extract structured financials...")
 
-    raw_json = call_claude(source_text)
-
     try:
-        result = ExtractionResult.model_validate(raw_json)
+        result = extract_from_text(source_text, incremental=False)
     except ValidationError as e:
         print("[ai_extraction] VALIDATION FAILED — model output did not match schema:")
         print(e)

@@ -136,6 +136,45 @@ class ReturnsMetrics(BaseModel):
     avg_acv_enterprise_trend: dict
 
 
+# ---------------------------------------------------------------------------
+# Document upload / live extraction schemas
+# ---------------------------------------------------------------------------
+
+class DocumentExtractResponse(BaseModel):
+    document_id: int
+    filename: Optional[str]
+    extraction: ExtractionResult
+    warnings: List[str] = []
+
+
+class DocumentCommitRequest(BaseModel):
+    """The (possibly human-edited) extraction the reviewer confirms. Sent
+    back exactly as ExtractionResult so the same Pydantic validation applies
+    whether the numbers came straight from the model or were corrected by
+    a person before commit."""
+    extraction: ExtractionResult
+
+
+class DocumentCommitResponse(BaseModel):
+    document_id: int
+    status: str
+    periods_written: List[str]
+    product_acv_written: int
+    kpi_targets_written: int
+    corporate_facts_written: int
+
+
+class DocumentSummary(BaseModel):
+    id: int
+    filename: Optional[str]
+    uploaded_at: str
+    status: str
+    fiscal_year_end: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
 class InsightRequest(BaseModel):
     section: str
 

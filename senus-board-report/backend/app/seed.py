@@ -12,6 +12,7 @@ from pathlib import Path
 from .database import Base, engine, SessionLocal
 from .models import FinancialPeriod, ProductACV, KpiTarget, CorporateFact
 from .schemas import ExtractionResult
+from .ingest import ingest_extraction_result
 
 DATA_PATH = Path(__file__).parent / "data" / "extracted_financials.json"
 
@@ -30,30 +31,23 @@ def seed():
 
     db = SessionLocal()
     try:
-        # Idempotent: wipe and reload so re-running seed.py is always safe.
+        # Wipe and reload so re-running the bootstrap seed is always safe and
+        # deterministic. Live document uploads (routers/documents.py) use the
+        # same ingest_extraction_result() function but WITHOUT wiping first —
+        # they upsert alongside whatever's already in the database, so
+        # uploading a new filing adds to the Board Report rather than
+        # resetting it.
         db.query(FinancialPeriod).delete()
         db.query(ProductACV).delete()
         db.query(KpiTarget).delete()
         db.query(CorporateFact).delete()
 
-        for p in result.periods:
-            db.add(FinancialPeriod(**p.model_dump()))
-
-        for a in result.product_acv:
-            db.add(ProductACV(**a.model_dump()))
-
-        for k in result.kpi_targets:
-            db.add(KpiTarget(**k.model_dump()))
-
-        for f in result.corporate_facts:
-            db.add(CorporateFact(**f.model_dump()))
-
-        db.commit()
+        summary = ingest_extraction_result(db, result, commit=True)
         print(
-            f"[seed] Loaded {len(result.periods)} financial periods, "
-            f"{len(result.product_acv)} product ACV rows, "
-            f"{len(result.kpi_targets)} KPI targets, "
-            f"{len(result.corporate_facts)} corporate facts into senus.db"
+            f"[seed] Loaded {len(summary['periods_written'])} financial periods "
+            f"({summary['periods_written']}), {summary['product_acv_written']} product ACV rows, "
+            f"{summary['kpi_targets_written']} KPI targets, "
+            f"{summary['corporate_facts_written']} corporate facts into senus.db"
         )
     finally:
         db.close()
