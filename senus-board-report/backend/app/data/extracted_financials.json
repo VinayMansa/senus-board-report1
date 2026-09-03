@@ -1,0 +1,140 @@
+{
+  "periods": [
+    {
+      "fiscal_year_end": "2025-06-30",
+      "label": "FY2025",
+      "turnover": 836991,
+      "gross_profit": 648450,
+      "operating_profit": -633694,
+      "profit_before_tax": -635768,
+      "profit_after_tax": -590256,
+      "net_assets_liabilities": -15575,
+      "retained_earnings": -865681,
+      "cash_flow_operating": -374820,
+      "cash_flow_investing": -3451,
+      "cash_flow_financing": 93767,
+      "net_change_in_cash": -284504,
+      "cash_start": 424639,
+      "cash_end": 140135,
+      "admin_expenses": 1286058,
+      "rd_expenditure_pct_revenue": 17,
+      "trade_debtors": 66990,
+      "trade_creditors": 55246,
+      "total_customers": 138,
+      "enterprise_customers": 36,
+      "independent_customers": 98,
+      "rd_customers": 4,
+      "revenue_pct_enterprise": 69,
+      "revenue_pct_independent": 4,
+      "revenue_pct_rd": 27,
+      "revenue_pct_ireland": 78,
+      "source_note": "No separate depreciation & amortisation line is disclosed; investing cash outflow of only \u20ac3,451 in FY2025 indicates a negligible depreciable fixed-asset base. EBITDA is therefore approximated as Operating Profit in downstream metrics \u2014 flagged as an explicit assumption, not a disclosed figure. Creditors due >1yr increased \u20ac83,655 following drawdown of a new bank loan; creditors due <1yr increased \u20ac153,768 (trade creditors \u20ac26,768\u2192\u20ac55,246 plus Directors' loans in-period, which were fully repaid by October 2025)."
+    },
+    {
+      "fiscal_year_end": "2024-06-30",
+      "label": "FY2024",
+      "turnover": 688317,
+      "gross_profit": 432477,
+      "operating_profit": -1130729,
+      "profit_before_tax": -1130458,
+      "profit_after_tax": -1098095,
+      "net_assets_liabilities": 574681,
+      "retained_earnings": -275425,
+      "cash_flow_operating": -1166697,
+      "cash_flow_investing": -33472,
+      "cash_flow_financing": -3846,
+      "net_change_in_cash": -1204015,
+      "cash_start": 1628654,
+      "cash_end": 424639,
+      "admin_expenses": 1560853,
+      "rd_expenditure_pct_revenue": 22,
+      "trade_debtors": 142361,
+      "trade_creditors": 26768,
+      "total_customers": null,
+      "enterprise_customers": null,
+      "independent_customers": null,
+      "rd_customers": null,
+      "revenue_pct_enterprise": null,
+      "revenue_pct_independent": null,
+      "revenue_pct_rd": null,
+      "revenue_pct_ireland": 95,
+      "source_note": "Customer channel breakdown (Enterprise/Independent/R&D) and total customer count are only disclosed for FY2025 in the source document, not FY2024. FY2024 admin expenses (\u20ac1,560,853) is derived: source states FY2025 admin expenses of \u20ac1,286,058 represents an \u20ac274,795 (18%) decrease vs FY2024, so FY2024 = \u20ac1,286,058 + \u20ac274,795. FY2024 revenue_pct_ireland of ~95% is derived from the disclosed 'less than 5% of revenue from outside Ireland' in FY2024, so treat as an approximate lower-bound complement, not an exact disclosed figure."
+    }
+  ],
+  "product_acv": [
+    {
+      "fiscal_year_end": "2025-06-30",
+      "product": "Senus SOIL",
+      "avg_acv_enterprise": 12309,
+      "subscription_range_low": 1500,
+      "subscription_range_high": 100000
+    },
+    {
+      "fiscal_year_end": "2025-06-30",
+      "product": "Senus ERA",
+      "avg_acv_enterprise": 58900,
+      "subscription_range_low": 50000,
+      "subscription_range_high": 500000
+    },
+    {
+      "fiscal_year_end": "2025-06-30",
+      "product": "Senus TERRAIN",
+      "avg_acv_enterprise": 21524,
+      "subscription_range_low": 1500,
+      "subscription_range_high": 30000
+    }
+  ],
+  "kpi_targets": [
+    {
+      "kpi": "Revenue Growth",
+      "baseline": "\u20ac836,991 (FY2025)",
+      "target": "CAGR of no less than 50% p.a.",
+      "target_year": "FY2030",
+      "description": "Primary KPI under the Senus 2030 strategy: grow revenue at a compound annual growth rate of no less than 50% through the period FY2026\u2013FY2030."
+    },
+    {
+      "kpi": "Enterprise Customers",
+      "baseline": "36 Enterprise customers (FY2025)",
+      "target": "More than 100 Enterprise customers",
+      "target_year": "FY2030",
+      "description": "Grow the Enterprise customer base from 36 accounts in FY2025 to more than 100 by FY2030."
+    },
+    {
+      "kpi": "Average ACV (Enterprise)",
+      "baseline": "\u20ac12,309\u2013\u20ac58,900 by product (FY2025)",
+      "target": "Average ACV > \u20ac50,000",
+      "target_year": "FY2030",
+      "description": "Grow average Annual Contract Value across Enterprise customers to more than \u20ac50,000, from a FY2025 range of \u20ac12,309 (SOIL) to \u20ac58,900 (ERA)."
+    },
+    {
+      "kpi": "Geographic Mix",
+      "baseline": "~78% of revenue from Ireland (FY2025)",
+      "target": "Less than 50% of revenue from Ireland",
+      "target_year": "FY2030",
+      "description": "Reduce reliance on the Irish market to less than 50% of group revenue as the UK and mainland Europe scale."
+    },
+    {
+      "kpi": "Profitability (EBITDA)",
+      "baseline": "Operating loss of \u20ac633,694 (FY2025)",
+      "target": "EBITDA positive",
+      "target_year": "FY2028",
+      "description": "Company targets becoming EBITDA positive during the financial year ending 30 June 2028."
+    }
+  ],
+  "corporate_facts": [
+    {"key": "listing_date", "value": "22 December 2025"},
+    {"key": "ticker", "value": "SENUS"},
+    {"key": "isin", "value": "IE000O0F49R3"},
+    {"key": "market", "value": "Euronext Access+ Dublin"},
+    {"key": "shares_in_issue", "value": "2,561,332"},
+    {"key": "private_placement_proceeds", "value": "\u20ac1.1 million"},
+    {"key": "post_money_valuation", "value": "\u20ac13.1 million"},
+    {"key": "implied_share_price", "value": "\u20ac5.126"},
+    {"key": "market_cap_at_listing", "value": "approximately \u20ac13 million"},
+    {"key": "employees", "value": "18 (12 male, 6 female)"},
+    {"key": "annual_office_rent", "value": "\u20ac41,500 (Athlone HQ, lease to October 2028)"},
+    {"key": "new_term_loan", "value": "\u20ac100,000 SBCI-backed term loan drawn in FY2025"},
+    {"key": "loamin_acquisition_date", "value": "14 November 2025"},
+    {"key": "strategy_name", "value": "Senus 2030"}
+  ]
+}

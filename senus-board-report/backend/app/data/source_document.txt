@@ -1,0 +1,74 @@
+SENUS PLC - INFORMATION DOCUMENT (December 2025) - EXTRACTED FINANCIAL & KPI SECTIONS
+
+7.1 Summary Financial Information (ADF Farm Solutions Limited, trading as Senus PLC)
+All figures in EUR (€).
+
+                                            FY ended 30 June 2025    FY ended 30 June 2024
+Turnover                                   836,991                  688,317
+Gross Profit                               648,450                  432,477
+Operating Profit / (Loss)                  (633,694)                (1,130,729)
+Profit / (Loss) Before Tax                 (635,768)                (1,130,458)
+Profit / (Loss) After Tax                  (590,256)                (1,098,095)
+Net (Liabilities) / Assets                 (15,575)                 574,681
+Retained Earnings                          (865,681)                (275,425)
+Cash flows from Operating Activities       (374,820)                (1,166,697)
+Cash flows from Investing Activities       (3,451)                  (33,472)
+Cash flows from Financing Activities       93,767                   (3,846)
+Net increase (decrease) in cash            (284,504)                (1,204,015)
+Cash and cash equivalents - beginning      424,639                  1,628,654
+Cash and cash equivalents - end            140,135                  424,639
+
+Narrative detail:
+- Revenue increased 21.6% to €836,991 (2024: €688,317) driven by client acquisition and UK market expansion.
+- Gross margin expanded to 77.5% from 62.8%, reflecting improved operational efficiency and reductions in cost of sales.
+- Administrative expenses decreased by €274,795 (18%) to €1,286,058, primarily through staff cost optimisation.
+- Operating loss in 2025 decreased 44% to €633,694 (2024: €1,130,729).
+- Net loss after tax decreased 46% to €590,256 (2024: €1,098,095).
+- Net liabilities of €15,575 as at 30 June 2025 vs net assets of €574,681 as at 30 June 2024, due to accumulated losses.
+- Trade debtors reduced from €142,361 (30 June 2024) to €66,990 (30 June 2025), a reduction of €51,727.
+- Creditors falling due within one year increased by €153,768: trade creditors increased from €26,768 (30 June 2024) to €55,246 (30 June 2025); balance from Directors' loans in the period.
+- Creditors falling due after more than one year increased by €83,655 following drawdown of a new bank loan.
+- Cash and cash equivalents decreased to €140,135 (30 June 2025) from €424,639 (30 June 2024).
+- Net cash used in operating activities decreased 68% from €1,166,697 (2024) to €374,820 (2025), due to reduced operating losses and positive working capital movements.
+- A new €100,000 SBCI-backed term loan was secured during the period, providing positive net cash generation from financing activities.
+- Net cash used in investing activities was minimal in the period (capex of €3,451 in FY2025, €33,472 in FY2024) — consistent with an asset-light software business with negligible depreciable fixed-asset base; no separate depreciation & amortisation figure disclosed in the summary financial information.
+- R&D expenditure: FY2025 approximately 17% of revenue; FY2024 approximately 22% of revenue.
+- Company anticipates R&D as a percentage of revenue will decline as it scales.
+- Directors loans: Anthony Childs (€100,000) and Gerard Keenan (€70,000) received as short-term working capital loans in instalments from March 2025; both loans were fully repaid in October 2025 (so not outstanding at year end / admission).
+- Company is well capitalised for organic growth through the two financial years ending 30 June 2027, following completion of the 2025 Private Placement (€1.1m gross proceeds, €13.1m post-money enterprise valuation, implied share price €5.126).
+- Company anticipates becoming EBITDA positive during FY2028.
+
+KEY PERFORMANCE INDICATORS (Section 7.3):
+- Primary KPI: Revenue Growth. Target: CAGR of no less than 50% through FY2030 (Senus 2030 strategy), vs. €836,991 FY2025 revenue base.
+- Enterprise Customers: 36 Enterprise customers in FY2025. Target: grow to more than 100 Enterprise customers by FY2030.
+- Average Annual Contract Value (ACV) with Enterprise Customers FY2025: €12,309 (Senus SOIL), €21,524 (Senus TERRAIN), €58,900 (Senus ERA). Target: average ACV across Enterprise customers to exceed €50,000 by FY2030.
+- Geographic mix: Ireland accounted for approximately 78% of FY2025 revenue (equivalently ~22% of revenue came from outside Ireland in the twelve months to 30 June 2025, compared to less than 5% in the twelve months to 30 June 2024). Target: Ireland to account for less than 50% of revenue by FY2030.
+- Profitability KPI: Target EBITDA positive during FY2028.
+
+CUSTOMER BASE BY CHANNEL (FY2025, twelve months to 30 June 2025):
+- Enterprise customers: 36 (69% of revenue)
+- Independent customers: 98 (4% of revenue)
+- R&D customers: 4 (27% of revenue)
+- Total customer accounts: 138
+
+REVENUE MIX BY CHANNEL (FY2025):
+- Enterprise: 69% of revenue
+- Independent: 4% of revenue
+- R&D: 27% of revenue
+
+PRODUCT / SOLUTION PRICING (Enterprise annual subscription ranges):
+- Senus SOIL: up to €100,000 (Enterprise); €1,500-€5,000 (agronomists/land managers, usage/hectare based)
+- Senus ERA: €50,000-€500,000 (usage/hectare based)
+- Senus TERRAIN: €1,500-€30,000 (usage/hectare based)
+
+CORPORATE / CAPITAL STRUCTURE:
+- Admission to Euronext Access+ Dublin: 22 December 2025, ticker SENUS, ISIN IE000O0F49R3.
+- Issued share capital at Admission: 2,561,332 ordinary shares of €0.01 nominal value.
+- 2025 Private Placement: gross proceeds €1.1 million, post-money enterprise valuation €13.1 million, implied share price €5.126.
+- Market capitalisation at listing: approximately €13 million.
+- Employees at Admission: 18 (12 male, 6 female).
+- Annual office rent (Athlone HQ): €41,500, lease until October 2028.
+- New SBCI-backed term loan: €100,000, drawn in FY2025 (assume standard SBCI term loan structure: 5-year term unless otherwise disclosed; exact interest rate and amortisation schedule not disclosed in the Information Document — treated as an assumption in this analysis, clearly flagged).
+- Loamin Acquisition completed 14 November 2025 (post FY2025 year-end, pre-Admission) — UK geospatial AI company, wholly owned subsidiary from that date; consideration and terms not broken out in the summary financial information provided.
+- Company strategy "Senus 2030": grow revenue at CAGR of no less than 50% p.a., FY2026-FY2030.
+- Company expects to become EBITDA positive during FY2028.
