@@ -94,7 +94,7 @@ instance matching ExtractionResult, not the schema itself):
 
 Return ONLY the JSON object matching ExtractionResult."""
 
-    raw_text = chat_json(SYSTEM_PROMPT, prompt, max_tokens=4000).strip()
+    raw_text = chat_json(SYSTEM_PROMPT, prompt, max_tokens=8000, json_mode=True).strip()
     if raw_text.startswith("```"):
         raw_text = raw_text.split("```")[1]
         if raw_text.startswith("json"):

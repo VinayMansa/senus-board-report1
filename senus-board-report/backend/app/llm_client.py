@@ -21,6 +21,15 @@ Get an Anthropic key at https://console.anthropic.com — paid, usage-based.
 """
 
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load backend/.env directly here too — not just in database.py — because
+# this module is used by entry points that never import database.py (e.g.
+# `python -m app.ai_extraction`, which only needs llm_client + schemas, no
+# database access at all). load_dotenv() is safe to call more than once.
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 GROQ_MODEL = "openai/gpt-oss-120b"
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
@@ -43,11 +52,15 @@ def current_model_label() -> str:
     return "none"
 
 
-def chat_json(system: str, user: str, max_tokens: int = 4000) -> str:
+def chat_json(system: str, user: str, max_tokens: int = 4000, json_mode: bool = False) -> str:
     """Sends a system + user prompt to whichever provider is configured and
     returns the raw text response. Callers are responsible for parsing/
     validating JSON out of the returned text (providers occasionally wrap
-    it in markdown fences despite instructions not to)."""
+    it in markdown fences despite instructions not to).
+
+    json_mode=True asks the provider to guarantee valid JSON output (via
+    response_format) — set this for extraction calls, not for prose
+    commentary calls."""
     provider = get_provider()
 
     if provider == "anthropic":
@@ -66,14 +79,25 @@ def chat_json(system: str, user: str, max_tokens: int = 4000) -> str:
         from openai import OpenAI
 
         client = OpenAI(api_key=os.environ["GROQ_API_KEY"], base_url="https://api.groq.com/openai/v1")
-        response = client.chat.completions.create(
+
+        kwargs = dict(
             model=GROQ_MODEL,
             max_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
+            # gpt-oss-120b is a reasoning model: it spends part of its token
+            # budget on internal reasoning before writing the actual answer.
+            # Without capping that, max_tokens can be exhausted mid-response,
+            # producing truncated / unterminated JSON. "low" keeps reasoning
+            # brief so the budget goes to the actual output.
+            extra_body={"reasoning_effort": "low"},
         )
+        if json_mode:
+            kwargs["response_format"] = {"type": "json_object"}
+
+        response = client.chat.completions.create(**kwargs)
         return response.choices[0].message.content
 
     raise RuntimeError(

@@ -98,7 +98,7 @@ Write 3-4 sentences of tight, board-appropriate commentary. Be specific with num
 includes an assumption_note or similar caveat, weave the key caveat in briefly rather than ignoring it.
 Do not use markdown headers or bullet points — plain prose only. Do not repeat the raw JSON back."""
 
-    return chat_json(system, prompt, max_tokens=300).strip()
+    return chat_json(system, prompt, max_tokens=500).strip()
 
 
 def _generate(section: str, db: Session, force: bool = False) -> InsightResponse:
