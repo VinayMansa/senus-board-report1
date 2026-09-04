@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -25,9 +26,19 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Local dev origins are always allowed. In production, set ALLOWED_ORIGINS to
+# a comma-separated list of the deployed frontend URL(s), e.g.
+#   ALLOWED_ORIGINS=https://senus-board-report-ui.onrender.com
+# so the deployed frontend can actually call this API — without this, every
+# request from the live site fails CORS even though the API itself is up.
+_extra_origins = [
+    o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()
+]
+_allowed_origins = ["http://localhost:5173", "http://127.0.0.1:5173"] + _extra_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+senus.db
+app/senus.db
+.env
+.git
+.gitignore

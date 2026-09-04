@@ -140,7 +140,9 @@ the UI as a visible callout — never silently baked into a number.
 | **EBITDA / EBITDA margin** | No D&A line is disclosed. Investing cash outflows are minimal (€3.5k FY2025, €33.5k FY2024), consistent with an asset-light software business, so EBITDA is approximated as Operating Profit. | `assumption_note` on Profitability |
 | **Cash runway** | Modelled as closing cash ÷ average FY2025 monthly operating cash burn. This is a trailing, operations-only view — it excludes the €1.1m Private Placement (Dec 2025) and €100k SBCI loan, both of which materially improve actual liquidity post year-end. | `assumption_note` on Cash & Liquidity |
 | **DSCR (Debt Service Coverage Ratio)** | The €100,000 SBCI-backed term loan's actual rate/term isn't disclosed. An illustrative 5-year amortising structure at 6% p.a. is assumed to estimate annual debt service (~€23.7k/yr) purely to give credit providers a directional read. | `dscr_note` on Solvency & Leverage |
-| **ROCE** | Not precisely computable — the source document gives balance-sheet *movements* (debtors, creditors, net assets) but not a full balance sheet (fixed assets, full liability split). The app states this limitation rather than fabricating a capital-employed figure, while noting operating losses in both years mean ROCE is negative regardless. | `roce_note` on Returns |
+| **ROCE** | Computed as Operating Profit ÷ estimated Capital Employed (Net Assets/(Liabilities) + Non-current Liabilities). The source document discloses equity directly but only the *movement* in non-current liabilities (+€83,655 in FY2025, following the new loan drawdown), not the absolute balance — so FY2024 non-current liabilities are assumed negligible and FY2025's is assumed to equal that disclosed movement. Result: −196.8% (FY2024), −930.8% (FY2025) — directionally robust (deeply negative, driven by both operating losses and a very small capital base), magnitude is an estimate. | `roce_note` on Returns |
+| **Month-over-month revenue growth** | Not computable — the source document discloses annual (FY-end) figures only, 365 days apart. Rather than omit the metric silently, the calculator checks the actual gap between the two most recent stored periods and computes real MoM growth automatically once monthly management accounts are uploaded via "Upload Report" — no code change needed then. | `mom_note` on Growth & Revenue |
+| **Bookings** | Not disclosed anywhere in the source document — only recognised revenue and Enterprise ACV by product are given. The Company describes tracking a sales funnel (leads, prospects, priced, won) internally, which would be the real source for this metric, but that requires a CRM/pipeline connector, not a financial filing. | `bookings_note` on Growth & Revenue |
 | **FY2024 customer/channel breakdown** | Not disclosed in the source document (only FY2025's 36/98/4 Enterprise/Independent/R&D split and 138 total accounts are given) — left as `null` rather than estimated, and the UI renders "—". | Growth & Revenue |
 | **FY2024 geographic mix** | Only "<5% of revenue from outside Ireland" is disclosed for FY2024 (vs. an exact 78%/22% split for FY2025); the app derives ~95%/5% as an approximation and labels the chart accordingly. | Growth & Revenue chart caption |
 | **Authentication** | Mocked client-side session (any email/password) rather than real SSO/IdP — out of scope for the assessment, called out on the login screen itself. | `Login.jsx` |
@@ -204,7 +206,49 @@ Sign in with any email/password (mock auth) to view the dashboard.
 
 ---
 
-## 8. What I'd build next with more time
+## 8. Deployment
+
+Deployed on [Render](https://render.com) — free tier, no credit card required,
+deploys straight from this GitHub repo.
+
+- **Live app:** _add your Render URL here_
+
+### One-time setup
+
+1. **Push this repo to GitHub** if you haven't already (see repo root for git history).
+2. **Get a free Groq key** (or Anthropic key) — see §4 above — you'll need it in step 4.
+3. **Create the backend service:**
+   - Render dashboard → **New** → **Web Service** → connect this repo
+   - Root directory: leave blank (repo root) · Runtime: **Docker**
+   - Dockerfile path: `backend/Dockerfile` · Docker context: `backend`
+   - Plan: **Free**
+   - Deploy. Once live, note its URL — something like `https://senus-board-report-api.onrender.com`
+4. **Set the backend's environment variables** (dashboard → service → Environment):
+   - `GROQ_API_KEY` = your key (or `ANTHROPIC_API_KEY`)
+   - Leave `ALLOWED_ORIGINS` for now — comes back in step 6
+5. **Create the frontend service:**
+   - Render dashboard → **New** → **Static Site** → same repo
+   - Build command: `cd frontend && npm install && npm run build`
+   - Publish directory: `frontend/dist`
+   - Add environment variable **`VITE_API_BASE`** = the backend URL from step 3 (this is a *build-time* variable — Vite bakes it into the static bundle, so it must be set before the build runs, not after)
+   - Deploy. Note its URL — something like `https://senus-board-report-ui.onrender.com`
+6. **Close the loop — set CORS on the backend:**
+   - Back on the backend service's Environment tab, set `ALLOWED_ORIGINS` = the frontend URL from step 5 (e.g. `https://senus-board-report-ui.onrender.com`)
+   - This triggers a redeploy automatically; without this step the deployed frontend can reach the API but every request fails with a CORS error
+7. Visit the frontend URL, sign in (mock auth, any email/password), confirm the dashboard loads real data.
+
+A `render.yaml` Blueprint is included at the repo root as a shortcut for steps 3 and 5 (Render dashboard → **New** → **Blueprint**) — it still requires the manual env var wiring in steps 4 and 6 above, since Render can't know either URL before both services exist.
+
+### Known limitations of the free tier (documented, not hidden)
+
+- **Free web services spin down after 15 minutes of inactivity** and take ~30-60s to wake on the next request — the first load after idle time will be slow. This is a free-tier constraint, not an application bug.
+- **The SQLite database resets on redeploy** (a genuine `git push` → new build), but persists across normal idle spin-down/wake cycles. `backend/entrypoint.sh` is written to be idempotent — it only re-seeds from the committed extraction JSON if no database file exists yet, specifically so that reports uploaded live via "Upload Report" survive ordinary sleep/wake cycles and are only lost on an actual redeploy.
+- For a production deployment handling real uploads over time, the next step would be swapping SQLite for Render's managed Postgres (small free tier, 1GB, 30-day expiry) so data survives redeploys too — noted in §9 below.
+
+## 9. What I'd build next with more time
+
+- Swap SQLite for Render's managed Postgres, so live-uploaded data survives a redeploy, not just idle spin-down/wake cycles.
+
 
 - Real balance-sheet ingestion (once full statutory accounts are available) to compute
   a precise ROCE and gearing ratio instead of the documented approximations.
