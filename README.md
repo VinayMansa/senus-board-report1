@@ -6,8 +6,6 @@ for Management, the Board, Equity Investors, and Credit Providers.
 
 Built for the Assiduous Technology Graduate Assessment.
 
-- **Live demo video:** _add YouTube link here_
-- **Repo:** _add GitHub link here_
 
 ---
 
